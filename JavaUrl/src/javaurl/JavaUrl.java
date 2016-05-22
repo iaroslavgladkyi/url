@@ -7,6 +7,7 @@ package javaurl;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -26,10 +27,11 @@ public class JavaUrl {
     /**
      * @param args the command line arguments
      */
-        public static void main(String[] args) throws MalformedURLException, IOException {
+    public static void main(String[] args) throws MalformedURLException {
         //  Create storage directory if not exists.
-        File storageDirectory = new File("C://storageDirectory");
-        if (storageDirectory.isDirectory()) {
+        File storageDirectory = new File("storageDirectory");
+
+        if (storageDirectory.exists()) {
             System.out.println("Storage directory exists");
         } else {
             storageDirectory.mkdir();
@@ -38,9 +40,12 @@ public class JavaUrl {
 
         // Print storage capacity.
         File[] files = storageDirectory.listFiles();
+
         long capacity = 0;
-        for (int i = 0; i < files.length; i++) {
-            capacity = capacity + files[i].length();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                capacity = capacity + files[i].length();
+            }
         }
 
         System.out.println("Storage capacity : " + capacity + " bytes");
@@ -66,14 +71,16 @@ public class JavaUrl {
                 System.out.println("Please, enter URL's");
                 Scanner scanner1 = new Scanner(System.in);
                 String urlDown = scanner1.nextLine();
+
+                if (urlDown.isEmpty()) {
+                    System.out.println("OK. Finished to add");
+                    break;
+                }
+
                 URL url = new URL(urlDown);
                 //List<URL> userUrlList = new ArrayList<>();
                 // String url = scanner1.nextLine();
                 userUrlList.add(url);
-                if (urlDown.equals(" ")) {
-                    System.out.println("OK. Finished to add");
-                    break;
-                }
             }
         } catch (IOException ex) {
             Logger.getLogger(JavaUrl.class.getName()).log(Level.SEVERE, null, ex);
@@ -83,6 +90,9 @@ public class JavaUrl {
             System.out.println(userUrlList);
         }
 
+//        if (true) {
+//            return;
+//        }
         // Uniform Resource Locator
 //        URL url = new URL("http", "www.ex.ua", 80, "/playlist/148363.m3u");
 //        URL url = new URL("http", "www.ex.ua", "/playlist/148363.m3u");
@@ -108,15 +118,19 @@ public class JavaUrl {
         // File file = new File("C://storageDirectory");
         // проверка закачки файла по одной ссылке (тестовый пример)
         URL urlTest = new URL("http://www.ex.ua/get/535653");
-        BufferedInputStream bis = new BufferedInputStream(urlTest.openStream());
-        FileOutputStream fos = new FileOutputStream("C://storageDirectory//" + System.currentTimeMillis() + ".mp3");
-        byte[] buffer = new byte[1024];
-        int count = 0;
-        while ((count = bis.read(buffer, 0, 1024)) != -1) {
-            fos.write(buffer, 0, count);
+        File fileDownload = new File(storageDirectory, String.format("%d.mp3", System.currentTimeMillis()));
+
+        try (FileOutputStream fos = new FileOutputStream(fileDownload); BufferedInputStream bis = new BufferedInputStream(urlTest.openStream())) {
+            byte[] buffer = new byte[1024];
+            int count = 0;
+            while ((count = bis.read(buffer, 0, 1024)) != -1) {
+                fos.write(buffer, 0, count);
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(JavaUrl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(JavaUrl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        fos.close();
-        bis.close();
         //}
 
         // TODO: If file already exists, ask user for action (skip, rewrite).
@@ -138,7 +152,3 @@ public class JavaUrl {
     }
 
 }
-
-
-    
-
